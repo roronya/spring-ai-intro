@@ -1,5 +1,7 @@
 package org.example.springaiintro.service;
 
+import org.example.springaiintro.model.Answer;
+import org.example.springaiintro.model.Question;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -15,6 +17,7 @@ public class OpenAIServiceImpl implements OpenAIService {
         this.chatModel = chatModel;
     }
 
+
     @Override
     public String getAnswer(String question) {
         PromptTemplate promptTemplate = new PromptTemplate(question);
@@ -23,5 +26,10 @@ public class OpenAIServiceImpl implements OpenAIService {
         ChatResponse response = chatModel.call(prompt);
 
         return response.getResult().getOutput().getText();
+    }
+
+    @Override
+    public Answer getAnswer(Question question) {
+        return new Answer(getAnswer(question.question()));
     }
 }

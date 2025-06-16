@@ -1,5 +1,8 @@
 package org.example.springaiintro.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.example.springaiintro.model.Answer;
 import org.example.springaiintro.model.GetCapitalRequest;
 import org.example.springaiintro.model.Question;
@@ -7,6 +10,7 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.chat.prompt.PromptTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
@@ -18,8 +22,12 @@ public class OpenAIServiceImpl implements OpenAIService {
 
     private final ChatModel chatModel;
 
-    public OpenAIServiceImpl(ChatModel chatModel) {
+    @Autowired
+    private final ObjectMapper objectMapper;
+
+    public OpenAIServiceImpl(ChatModel chatModel, ObjectMapper objectMapper) {
         this.chatModel = chatModel;
+        this.objectMapper = objectMapper;
     }
 
     @Value("classpath:templates/get-capital-prompt.st")
@@ -51,7 +59,16 @@ public class OpenAIServiceImpl implements OpenAIService {
 
         ChatResponse response = chatModel.call(prompt);
 
-        return new Answer(response.getResult().getOutput().getText());
+        System.out.println(response.getResult().getOutput().getText());
+        String responseString;
+        try {
+            JsonNode jsonNode = objectMapper.readTree(response.getResult().getOutput().getText());
+            responseString = jsonNode.get("answer").asText();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+        // return new Answer(response.getResult().getOutput().getText());
+        return new Answer(responseString);
     }
 
     @Override

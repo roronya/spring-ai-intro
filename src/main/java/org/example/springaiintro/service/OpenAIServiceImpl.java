@@ -1,6 +1,7 @@
 package org.example.springaiintro.service;
 
 import org.example.springaiintro.model.Answer;
+import org.example.springaiintro.model.GetCapitalRequest;
 import org.example.springaiintro.model.Question;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
@@ -32,4 +33,15 @@ public class OpenAIServiceImpl implements OpenAIService {
     public Answer getAnswer(Question question) {
         return new Answer(getAnswer(question.question()));
     }
+
+    @Override
+    public Answer getCapital(GetCapitalRequest getCapitalRequest) {
+        PromptTemplate promptTemplate = new PromptTemplate("What is the capital of " + getCapitalRequest.stateOrCountry() + " ?");
+        Prompt prompt = promptTemplate.create();
+
+        ChatResponse response = chatModel.call(prompt);
+
+        return new Answer(response.getResult().getOutput().getText());
+    }
+
 }
